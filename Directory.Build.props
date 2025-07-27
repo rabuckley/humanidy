@@ -1,0 +1,14 @@
+<Project>
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <WarningsAsErrors>nullable</WarningsAsErrors>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <LangVersion>preview</LangVersion>
+        <AnalysisLevel>preview</AnalysisLevel>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <RepositoryUrl>https://github.com/rabuckley/humanidy</RepositoryUrl>
+    </PropertyGroup>
+</Project>

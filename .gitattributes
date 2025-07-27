@@ -1,0 +1,90 @@
+# Set default behavior to automatically normalize line endings.
+* text=auto
+
+*.doc   diff=astextplain
+*.DOC	diff=astextplain
+*.docx	diff=astextplain
+*.DOCX	diff=astextplain
+*.dot	diff=astextplain
+*.DOT	diff=astextplain
+*.pdf	diff=astextplain
+*.PDF	diff=astextplain
+*.rtf	diff=astextplain
+*.RTF	diff=astextplain
+
+*.jpg  	binary
+*.png 	binary
+*.gif 	binary
+*.mp3   binary
+*.wav   binary
+*.gif   binary
+*.dll   binary
+*.snk   binary
+
+# Force bash scripts to always use lf line endings so that if a repo is accessed
+# in Unix via a file share from Windows, the scripts will work.
+*.in text eol=lf
+*.sh text eol=lf
+
+# Likewise, force cmd and batch scripts to always use crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+*.asm   text
+*.c     text
+*.clj   text
+*.cpp   text
+*.cs    text diff=csharp
+*.css   text
+*.cxx   text
+*.erl   text
+*.fs    text
+*.fsx   text
+*.h     text
+*.hs    text
+*.htm   text
+*.html  text
+*.hxx   text
+*.java  text
+*.js    text
+*.json  text
+*.less  text
+*.lisp  text
+*.lss 	text
+*.lua   text
+*.m     text
+*.md    text
+*.php   text
+*.ps1   text
+*.py    text
+*.rb    text
+*.resx  text
+*.sass  text
+*.scss  text
+*.scp   text
+*.sql   text
+*.ts    text
+*.vb    text
+*.xaml  text
+
+*.xml   text eol=lf
+*.plist text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.svg   text eol=lf
+
+*.csproj text
+*.vbproj text
+*.fsproj text
+*.dbproj text
+*.props  text
+*.slnf   text
+
+*.sln text eol=crlf
+
+*.manifest text eol=crlf
+*.appxmanifest text eol=crlf
+
+# Mark files as generated
+*.g.cs linguist-generated=true
+

@@ -1,0 +1,11 @@
+@BaseAddress = http://localhost:5200
+
+GET {{BaseAddress}}/v1.0/todos/
+Accept: application/json
+
+###
+
+GET {{BaseAddress}}/v1.0/todos/todo_8u1AtGwvGEfhI
+Accept: application/json
+
+###

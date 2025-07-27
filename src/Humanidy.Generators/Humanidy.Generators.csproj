@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <IsRoslynComponent>true</IsRoslynComponent>
+
+        <RootNamespace>Humanidy.Generators</RootNamespace>
+        <PackageId>Humanidy.Generators</PackageId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+    </ItemGroup>
+
+    <!-- PrivateAssets so the NuGet doesn't have any dependencies -->
+    <ItemGroup>
+        <ProjectReference Include="..\Humanidy.Abstractions\Humanidy.Abstractions.csproj" PrivateAssets="All"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(OutputPath)\Humanidy.Abstractions.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(OutputPath)\Humanidy.Abstractions.dll" Pack="true" PackagePath="lib\netstandard2.0" Visible="true"/>
+    </ItemGroup>
+
+</Project>
