@@ -2,14 +2,27 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <IsPackable>false</IsPackable>
+        <IsPackable>true</IsPackable>
 
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsRoslynComponent>true</IsRoslynComponent>
 
         <RootNamespace>Humanidy.Generators</RootNamespace>
-        <PackageId>Humanidy.Generators</PackageId>
+
+        <PackageId>Humanidy</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Ryan Buckley</Authors>
+        <Description>Human-readable, strongly-typed, source-generated identifiers for C#.</Description>
+        <PackageProjectUrl>https://github.com/rabuckley/humanidy</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/rabuckley/humanidy</RepositoryUrl>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENCE</PackageLicenseFile>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../readme.md" Pack="true" PackagePath=""/>
+        <None Include="../../LICENCE" Pack="true" PackagePath=""/>
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
