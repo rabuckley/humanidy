@@ -257,7 +257,7 @@ internal static class HumanidyEmitter
 
                              public static bool TryParse(global::System.ReadOnlySpan<char> s, out {{spec.StructName}} result)
                              {
-                                 global::System.Span<byte> buffer = stackalloc byte[512]; // TODO: Better choice of buffer size.
+                                 global::System.Span<byte> buffer = stackalloc byte[Length];
 
                                  if (global::System.Text.Ascii.FromUtf16(s, buffer, out var bytesWritten) is global::System.Buffers.OperationStatus.Done)
                                  {
