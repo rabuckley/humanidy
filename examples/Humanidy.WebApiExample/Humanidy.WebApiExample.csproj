@@ -11,9 +11,5 @@
     <ItemGroup>
         <ProjectReference Include="..\Humanidy.Examples.Model\Humanidy.Examples.Model.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Models\" />
-    </ItemGroup>
     
 </Project>
