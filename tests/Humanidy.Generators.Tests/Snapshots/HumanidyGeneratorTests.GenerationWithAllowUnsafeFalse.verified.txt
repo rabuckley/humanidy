@@ -54,18 +54,21 @@ readonly partial struct SampleEntity :
     }
 
     /// <summary>
-    /// Creates a new, randomly generated, SampleEntity with the prefix <c>pref</c> and 14 random alphanumeric ASCII characters.
+    /// Creates a new, randomly generated, SampleEntity with the prefix <c>pref</c> and 
+    /// 14 random alphanumeric ASCII characters.
     /// </summary>
     public static SampleEntity NewId()
     {
-        global::System.Memory<byte> buffer = new byte[Length];
+        byte[] identifier = new byte[Length];
         
-        Prefix.CopyTo(buffer.Span);
-        buffer.Span[PrefixLength] = (byte)'_';
+        Prefix.CopyTo(identifier);
+        identifier[PrefixLength] = (byte)'_';
     
-        global::System.Security.Cryptography.RandomNumberGenerator.GetItems(ValidIdBytes, buffer.Span[(PrefixLength + 1)..]);
+        global::System.Security.Cryptography.RandomNumberGenerator.GetItems(
+            ValidIdBytes,
+            identifier.AsSpan(PrefixLength + 1));
     
-        return new(buffer);
+        return new SampleEntity(new global::System.ReadOnlyMemory<byte>(identifier));
     }
 
     public bool Equals(SampleEntity other)
@@ -80,9 +83,9 @@ readonly partial struct SampleEntity :
     
     public override int GetHashCode()
     {
-        var c = new global::System.HashCode();
-        c.AddBytes(_value.Span);
-        return c.ToHashCode();
+        var hashCode = new global::System.HashCode();
+        hashCode.AddBytes(_value.Span);
+        return hashCode.ToHashCode();
     }
     
     public static bool operator ==(SampleEntity left, SampleEntity right)
@@ -128,7 +131,9 @@ readonly partial struct SampleEntity :
         return Parse(global::System.MemoryExtensions.AsSpan(s));
     }
     
-    static SampleEntity global::System.IParsable<SampleEntity>.Parse(string s, global::System.IFormatProvider? provider)
+    static SampleEntity global::System.IParsable<SampleEntity>.Parse(
+        string s, 
+        global::System.IFormatProvider? provider)
     {
         return Parse(s);
     }
@@ -144,7 +149,10 @@ readonly partial struct SampleEntity :
         return TryParse(global::System.MemoryExtensions.AsSpan(s), out result);
     }
     
-    static bool global::System.IParsable<SampleEntity>.TryParse(string? s, global::System.IFormatProvider? provider, out SampleEntity result)
+    static bool global::System.IParsable<SampleEntity>.TryParse(
+        string? s, 
+        global::System.IFormatProvider? provider, 
+        out SampleEntity result)
     {
         return TryParse(s, out result);
     }
@@ -186,7 +194,9 @@ readonly partial struct SampleEntity :
             $"The provided string '{s.ToString()}' is not a valid SampleEntity.");
     }
     
-    static SampleEntity global::System.ISpanParsable<SampleEntity>.Parse(global::System.ReadOnlySpan<char> s, global::System.IFormatProvider? provider)
+    static SampleEntity global::System.ISpanParsable<SampleEntity>.Parse(
+        global::System.ReadOnlySpan<char> s, 
+        global::System.IFormatProvider? provider)
     {
         return Parse(s);
     }
@@ -204,7 +214,10 @@ readonly partial struct SampleEntity :
         return false;
     }
     
-    static bool global::System.ISpanParsable<SampleEntity>.TryParse(global::System.ReadOnlySpan<char> s, global::System.IFormatProvider? provider, out SampleEntity result)
+    static bool global::System.ISpanParsable<SampleEntity>.TryParse(
+        global::System.ReadOnlySpan<char> s,
+        global::System.IFormatProvider? provider,
+        out SampleEntity result)
     {
         return TryParse(s, out result);
     }
@@ -224,7 +237,9 @@ readonly partial struct SampleEntity :
             $"The provided UTF-8 byte span is not a valid SampleEntity.");
     }
     
-    static SampleEntity global::System.IUtf8SpanParsable<SampleEntity>.Parse(global::System.ReadOnlySpan<byte> utf8Text, global::System.IFormatProvider? provider)
+    static SampleEntity global::System.IUtf8SpanParsable<SampleEntity>.Parse(
+        global::System.ReadOnlySpan<byte> utf8Text,
+        global::System.IFormatProvider? provider)
     {
         return Parse(utf8Text);
     }
@@ -250,7 +265,10 @@ readonly partial struct SampleEntity :
         return true;
     }
        
-    static bool global::System.IUtf8SpanParsable<SampleEntity>.TryParse(global::System.ReadOnlySpan<byte> utf8Text, global::System.IFormatProvider? provider, out SampleEntity result)
+    static bool global::System.IUtf8SpanParsable<SampleEntity>.TryParse(
+        global::System.ReadOnlySpan<byte> utf8Text, 
+        global::System.IFormatProvider? provider, 
+        out SampleEntity result)
     {
         return TryParse(utf8Text, out result);
     }
@@ -269,7 +287,8 @@ readonly partial struct SampleEntity :
             return false;
         }
     
-        return global::System.Text.Ascii.ToUtf16(_value.Span, destination, out charsWritten) is global::System.Buffers.OperationStatus.Done;
+        return global::System.Text.Ascii.ToUtf16(_value.Span, destination, out charsWritten) 
+            is global::System.Buffers.OperationStatus.Done;
     }
     
     bool global::System.ISpanFormattable.TryFormat(

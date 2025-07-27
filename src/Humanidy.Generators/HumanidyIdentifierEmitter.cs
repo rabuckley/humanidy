@@ -158,7 +158,8 @@ internal static class HumanidyIdentifierEmitter
                     return false;
                 }
 
-                return global::System.Text.Ascii.ToUtf16(_value.Span, destination, out charsWritten) is global::System.Buffers.OperationStatus.Done;
+                return global::System.Text.Ascii.ToUtf16(_value.Span, destination, out charsWritten) 
+                    is global::System.Buffers.OperationStatus.Done;
             }
 
             bool global::System.ISpanFormattable.TryFormat(
@@ -193,7 +194,9 @@ internal static class HumanidyIdentifierEmitter
                       $"The provided UTF-8 byte span is not a valid {{spec.StructName}}.");
               }
 
-              static {{spec.StructName}} global::System.IUtf8SpanParsable<{{spec.StructName}}>.Parse(global::System.ReadOnlySpan<byte> utf8Text, global::System.IFormatProvider? provider)
+              static {{spec.StructName}} global::System.IUtf8SpanParsable<{{spec.StructName}}>.Parse(
+                  global::System.ReadOnlySpan<byte> utf8Text,
+                  global::System.IFormatProvider? provider)
               {
                   return Parse(utf8Text);
               }
@@ -219,7 +222,10 @@ internal static class HumanidyIdentifierEmitter
                   return true;
               }
                  
-              static bool global::System.IUtf8SpanParsable<{{spec.StructName}}>.TryParse(global::System.ReadOnlySpan<byte> utf8Text, global::System.IFormatProvider? provider, out {{spec.StructName}} result)
+              static bool global::System.IUtf8SpanParsable<{{spec.StructName}}>.TryParse(
+                  global::System.ReadOnlySpan<byte> utf8Text, 
+                  global::System.IFormatProvider? provider, 
+                  out {{spec.StructName}} result)
               {
                   return TryParse(utf8Text, out result);
               }
@@ -250,7 +256,9 @@ internal static class HumanidyIdentifierEmitter
                       $"The provided string '{s.ToString()}' is not a valid {{spec.StructName}}.");
               }
 
-              static {{spec.StructName}} global::System.ISpanParsable<{{spec.StructName}}>.Parse(global::System.ReadOnlySpan<char> s, global::System.IFormatProvider? provider)
+              static {{spec.StructName}} global::System.ISpanParsable<{{spec.StructName}}>.Parse(
+                  global::System.ReadOnlySpan<char> s, 
+                  global::System.IFormatProvider? provider)
               {
                   return Parse(s);
               }
@@ -273,7 +281,10 @@ internal static class HumanidyIdentifierEmitter
                   return false;
               }
 
-              static bool global::System.ISpanParsable<{{spec.StructName}}>.TryParse(global::System.ReadOnlySpan<char> s, global::System.IFormatProvider? provider, out {{spec.StructName}} result)
+              static bool global::System.ISpanParsable<{{spec.StructName}}>.TryParse(
+                  global::System.ReadOnlySpan<char> s,
+                  global::System.IFormatProvider? provider,
+                  out {{spec.StructName}} result)
               {
                   return TryParse(s, out result);
               }
@@ -326,7 +337,9 @@ internal static class HumanidyIdentifierEmitter
                   return Parse(global::System.MemoryExtensions.AsSpan(s));
               }
 
-              static {{spec.StructName}} global::System.IParsable<{{spec.StructName}}>.Parse(string s, global::System.IFormatProvider? provider)
+              static {{spec.StructName}} global::System.IParsable<{{spec.StructName}}>.Parse(
+                  string s, 
+                  global::System.IFormatProvider? provider)
               {
                   return Parse(s);
               }
@@ -342,7 +355,10 @@ internal static class HumanidyIdentifierEmitter
                   return TryParse(global::System.MemoryExtensions.AsSpan(s), out result);
               }
 
-              static bool global::System.IParsable<{{spec.StructName}}>.TryParse(string? s, global::System.IFormatProvider? provider, out {{spec.StructName}} result)
+              static bool global::System.IParsable<{{spec.StructName}}>.TryParse(
+                  string? s, 
+                  global::System.IFormatProvider? provider, 
+                  out {{spec.StructName}} result)
               {
                   return TryParse(s, out result);
               }
@@ -369,9 +385,9 @@ internal static class HumanidyIdentifierEmitter
 
               public override int GetHashCode()
               {
-                  var c = new global::System.HashCode();
-                  c.AddBytes(_value.Span);
-                  return c.ToHashCode();
+                  var hashCode = new global::System.HashCode();
+                  hashCode.AddBytes(_value.Span);
+                  return hashCode.ToHashCode();
               }
 
               public static bool operator ==({{spec.StructName}} left, {{spec.StructName}} right)
@@ -418,18 +434,21 @@ internal static class HumanidyIdentifierEmitter
         builder.WriteBlock(
             $$"""
               /// <summary>
-              /// Creates a new, randomly generated, {{spec.StructName}} with the prefix <c>{{spec.Prefix}}</c> and {{spec.RandomLength}} random alphanumeric ASCII characters.
+              /// Creates a new, randomly generated, {{spec.StructName}} with the prefix <c>{{spec.Prefix}}</c> and 
+              /// {{spec.RandomLength}} random alphanumeric ASCII characters.
               /// </summary>
               public static {{spec.StructName}} NewId()
               {
-                  global::System.Memory<byte> buffer = new byte[Length];
+                  byte[] identifier = new byte[Length];
                   
-                  Prefix.CopyTo(buffer.Span);
-                  buffer.Span[PrefixLength] = (byte)'_';
+                  Prefix.CopyTo(identifier);
+                  identifier[PrefixLength] = (byte)'_';
 
-                  global::System.Security.Cryptography.RandomNumberGenerator.GetItems(ValidIdBytes, buffer.Span[(PrefixLength + 1)..]);
+                  global::System.Security.Cryptography.RandomNumberGenerator.GetItems(
+                      ValidIdBytes,
+                      identifier.AsSpan(PrefixLength + 1));
 
-                  return new(buffer);
+                  return new {{spec.StructName}}(new global::System.ReadOnlyMemory<byte>(identifier));
               }
               """);
 
