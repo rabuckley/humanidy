@@ -10,7 +10,7 @@
         <RootNamespace>Humanidy.Generators</RootNamespace>
 
         <PackageId>Humanidy</PackageId>
-        <Version>0.1.0</Version>
+        <Version>0.1.1</Version>
         <Authors>Ryan Buckley</Authors>
         <Description>Human-readable, strongly-typed, source-generated identifiers for C#.</Description>
         <PackageProjectUrl>https://github.com/rabuckley/humanidy</PackageProjectUrl>
