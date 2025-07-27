@@ -1,6 +1,6 @@
 namespace Humanidy;
 
-[Humanidy("test")]
+[Humanidy("test", RandomLength = 24)]
 public partial struct TestId;
 
 public sealed class HumanidyTests
@@ -16,8 +16,9 @@ public sealed class HumanidyTests
     [Fact]
     public void NewId_ShouldHaveCorrectLength()
     {
-        var id = TestId.NewId();
-        Assert.Equal(TestId.Length, id.ToString().Length);
+#pragma warning disable xUnit2000 // Constant value should be expected. Testing that the constant is generated correctly.
+        Assert.Equal("test_".Length + 24, TestId.Length);
+#pragma warning restore xUnit2000
     }
 
     [Fact]

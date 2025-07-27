@@ -79,6 +79,8 @@ internal static class HumanidyEmitter
             }
 
             var jsonSerializerTypeFullName = $"global::Humanidy.Text.Json.{spec.StructName}JsonConverter";
+            
+            var length = spec.Prefix.Length + spec.RandomLength + 1; // +1 for the underscore
 
             /*language=cs*/
             var code = $$"""
@@ -108,7 +110,7 @@ internal static class HumanidyEmitter
                              /// <summary>
                              /// The length of the identifier when not empty.
                              /// </summary>
-                             public const int Length = PrefixLength + RandomLength;
+                             public const int Length = {{length}};
 
                              private readonly global::System.ReadOnlyMemory<byte> _value;
                              
