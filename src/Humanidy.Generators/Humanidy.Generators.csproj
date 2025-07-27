@@ -17,6 +17,7 @@
         <RepositoryUrl>https://github.com/rabuckley/humanidy</RepositoryUrl>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
         <PackageLicenseFile>LICENCE</PackageLicenseFile>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>

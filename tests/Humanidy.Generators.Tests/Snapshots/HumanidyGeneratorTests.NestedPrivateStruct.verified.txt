@@ -10,6 +10,7 @@ namespace Humanidy.Generators.Sample;
 /// SampleEntity has an entropy of ~83.36 bits.
 /// </remarks>
 /// </summary>
+// [global::System.Text.Json.Serialization.JsonConverter(typeof(global::Humanidy.Text.Json.SampleEntityJsonConverter))]
 readonly partial struct SampleEntity :
    global::System.IEquatable<SampleEntity>,
    global::System.IComparable<SampleEntity>,
@@ -18,41 +19,26 @@ readonly partial struct SampleEntity :
    global::System.IUtf8SpanFormattable,
    global::System.IUtf8SpanParsable<SampleEntity>
 {
-    /// <summary>
-    /// The length of the randomly generated part of the identifier.
-    /// </summary>
+    private const int MaxRandomLength = 256;
     private const int RandomLength = 14;
-    
-    /// <summary>
-    /// The length of the prefix, excluding the trailing underscore.
-    /// </summary>
     private const int PrefixLength = 4;
     
-    /// <summary>
-    /// The valid characters for the random part of the identifier.
-    /// </summary>
     private static global::System.ReadOnlySpan<byte> ValidIdBytes => "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"u8;
     
-    /// <summary>
-    /// The prefix of the identifier, excluding the trailing underscore.
-    /// </summary>
     private static global::System.ReadOnlySpan<byte> Prefix => "pref"u8;
     
     /// <summary>
     /// The length of the identifier when not empty.
     /// </summary>
-    public const int Length = PrefixLength + RandomLength + 1;
+    public const int Length = PrefixLength + RandomLength;
 
-    /// <summary>
-    /// The underlying value of the identifier.
-    /// </summary>
     private readonly global::System.ReadOnlyMemory<byte> _value;
     
     private SampleEntity(global::System.ReadOnlyMemory<byte> value)
     {
         _value = value;
     }
-
+    
     /// <summary>
     /// Creates a new, randomly generated, SampleEntity with the prefix <c>pref</c> and 14 random alphanumeric ASCII characters.
     /// </summary>
@@ -62,12 +48,12 @@ readonly partial struct SampleEntity :
         
         Prefix.CopyTo(buffer.Span);
         buffer.Span[PrefixLength] = (byte)'_';
-    
+
         global::System.Security.Cryptography.RandomNumberGenerator.GetItems(ValidIdBytes, buffer.Span[(PrefixLength + 1)..]);
-    
+
         return new(buffer);
     }
-
+        
     public bool Equals(SampleEntity other)
     {
         return global::System.MemoryExtensions.SequenceEqual(_value.Span, other._value.Span);
@@ -94,7 +80,7 @@ readonly partial struct SampleEntity :
     {
         return !(left == right);
     }
-    
+
     public int CompareTo(SampleEntity other)
     {
         return global::System.MemoryExtensions.SequenceCompareTo(_value.Span, other._value.Span);
@@ -119,7 +105,7 @@ readonly partial struct SampleEntity :
     {
         return left.CompareTo(right) >= 0;
     }
-
+    
     # region IParsable<SampleEntity>
     
     public static SampleEntity Parse(string s)
@@ -127,12 +113,12 @@ readonly partial struct SampleEntity :
         global::System.ArgumentNullException.ThrowIfNull(s);
         return Parse(global::System.MemoryExtensions.AsSpan(s));
     }
-    
+
     static SampleEntity global::System.IParsable<SampleEntity>.Parse(string s, global::System.IFormatProvider? provider)
     {
         return Parse(s);
     }
-    
+
     public static bool TryParse(string? s, out SampleEntity result)
     {
         if (s is null)
@@ -140,17 +126,17 @@ readonly partial struct SampleEntity :
             result = default;
             return false;
         }
-    
+
         return TryParse(global::System.MemoryExtensions.AsSpan(s), out result);
     }
-    
+
     static bool global::System.IParsable<SampleEntity>.TryParse(string? s, global::System.IFormatProvider? provider, out SampleEntity result)
     {
         return TryParse(s, out result);
     }
-    
-    # endregion
 
+    # endregion
+    
     public override string ToString()
     {
         if (_value.IsEmpty)
@@ -174,7 +160,7 @@ readonly partial struct SampleEntity :
     }
 
     # region ISpanParsable<SampleEntity>
-    
+
     public static SampleEntity Parse(global::System.ReadOnlySpan<char> s)
     {
         if (TryParse(s, out var result))
@@ -185,33 +171,32 @@ readonly partial struct SampleEntity :
         throw new global::System.FormatException(
             $"The provided string '{s.ToString()}' is not a valid SampleEntity.");
     }
-    
+
     static SampleEntity global::System.ISpanParsable<SampleEntity>.Parse(global::System.ReadOnlySpan<char> s, global::System.IFormatProvider? provider)
     {
         return Parse(s);
     }
 
-    [global::System.Runtime.CompilerServices.SkipLocalsInit]
     public static bool TryParse(global::System.ReadOnlySpan<char> s, out SampleEntity result)
     {
-        global::System.Span<byte> buffer = stackalloc byte[Length];
-    
+        global::System.Span<byte> buffer = stackalloc byte[512]; // TODO: Better choice of buffer size.
+
         if (global::System.Text.Ascii.FromUtf16(s, buffer, out var bytesWritten) is global::System.Buffers.OperationStatus.Done)
         {
             return TryParse(buffer[..bytesWritten], out result);
         }
-    
+
         result = default;
         return false;
     }
-    
+   
     static bool global::System.ISpanParsable<SampleEntity>.TryParse(global::System.ReadOnlySpan<char> s, global::System.IFormatProvider? provider, out SampleEntity result)
     {
         return TryParse(s, out result);
     }
-    
+   
     # endregion
-
+    
     # region IUtf8SpanParsable<SampleEntity>
     
     public static SampleEntity Parse(global::System.ReadOnlySpan<byte> utf8Text)
@@ -246,7 +231,7 @@ readonly partial struct SampleEntity :
                 return false;
             }
         }
-    
+
         result = new(utf8Text.ToArray());
         return true;
     }
@@ -257,7 +242,7 @@ readonly partial struct SampleEntity :
     }
     
     # endregion
-
+    
     # region ISpanFormattable
     
     public bool TryFormat(
@@ -269,7 +254,7 @@ readonly partial struct SampleEntity :
             charsWritten = 0;
             return false;
         }
-    
+
         return global::System.Text.Ascii.ToUtf16(_value.Span, destination, out charsWritten) is global::System.Buffers.OperationStatus.Done;
     }
     
@@ -283,7 +268,7 @@ readonly partial struct SampleEntity :
     }
     
     # endregion
-
+    
     # region IUtf8SpanFormattable
     
     public bool TryFormat(global::System.Span<byte> utf8Destination, out int bytesWritten)
@@ -293,7 +278,7 @@ readonly partial struct SampleEntity :
             bytesWritten = 0;
             return false;
         }
-    
+
         _value.Span.CopyTo(utf8Destination);
         bytesWritten = _value.Length;
         return true;
@@ -309,9 +294,7 @@ readonly partial struct SampleEntity :
     }
     
     # endregion
-
 }
-
 
 // <auto-generated/>
 
@@ -321,77 +304,25 @@ namespace Humanidy.Text.Json;
 
 public sealed class SampleEntityJsonConverter : global::System.Text.Json.Serialization.JsonConverter<global::Humanidy.Generators.Sample.SampleEntity>
 {
-    public override global::Humanidy.Generators.Sample.SampleEntity Read(
-        ref global::System.Text.Json.Utf8JsonReader reader, 
-        global::System.Type typeToConvert, 
-        global::System.Text.Json.JsonSerializerOptions options)
+    public override global::Humanidy.Generators.Sample.SampleEntity Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type typeToConvert, global::System.Text.Json.JsonSerializerOptions options)
     {
-        if (reader.TokenType is not global::System.Text.Json.JsonTokenType.String)
+        if (reader.TokenType != global::System.Text.Json.JsonTokenType.String)
         {
             throw new global::System.Text.Json.JsonException("Expected a string token.");
         }
-        
-        var valueLength = reader.HasValueSequence
-            ? checked((int)reader.ValueSequence.Length)
-            : reader.ValueSpan.Length;
-        
-        if (valueLength is not global::Humanidy.Generators.Sample.SampleEntity.Length)
-        {
-              throw new global::System.Text.Json.JsonException(
-                  $"Expected a SampleEntity value of length 19, but got '{valueLength}'.");
-        }
-        
-        global::System.Span<byte> buffer = stackalloc byte[global::Humanidy.Generators.Sample.SampleEntity.Length];
-        var bytesWritten = reader.CopyString(buffer);
-        global::System.Diagnostics.Debug.Assert(bytesWritten is global::Humanidy.Generators.Sample.SampleEntity.Length);
+
+        var value = reader.GetString();
        
-        if (!global::Humanidy.Generators.Sample.SampleEntity.TryParse(buffer, out var result))
+        if (value is null || !global::Humanidy.Generators.Sample.SampleEntity.TryParse(value, out var result))
         {
-            throw new global::System.Text.Json.JsonException($"Invalid SampleEntity.");
+            throw new global::System.Text.Json.JsonException($"Invalid global::Humanidy.Generators.Sample.SampleEntity value: {value}");
         }
-    
+
         return result;
     }
 
-    [global::System.Runtime.CompilerServices.SkipLocalsInit]
-    public override void Write(
-        global::System.Text.Json.Utf8JsonWriter writer, 
-        global::Humanidy.Generators.Sample.SampleEntity value, 
-        global::System.Text.Json.JsonSerializerOptions options)
+    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, global::Humanidy.Generators.Sample.SampleEntity value, global::System.Text.Json.JsonSerializerOptions options)
     {
-        global::System.Span<byte> buffer = stackalloc byte[global::Humanidy.Generators.Sample.SampleEntity.Length];
-        
-        if (!value.TryFormat(buffer, out var bytesWritten))
-        {
-            ThrowFailedToFormatException();
-            return;
-        }
-      
-        writer.WriteStringValue(buffer[..bytesWritten]);
+        writer.WriteStringValue(value.ToString());
     }
-
-    [global::System.Runtime.CompilerServices.SkipLocalsInit]
-    public override void WriteAsPropertyName(
-        global::System.Text.Json.Utf8JsonWriter writer, 
-        global::Humanidy.Generators.Sample.SampleEntity value, 
-        global::System.Text.Json.JsonSerializerOptions options)
-    {
-        global::System.Span<byte> buffer = stackalloc byte[global::Humanidy.Generators.Sample.SampleEntity.Length];
-        
-        if (!value.TryFormat(buffer, out var bytesWritten))
-        {
-            ThrowFailedToFormatException();
-            return;
-        }
-      
-        writer.WritePropertyName(buffer[..bytesWritten]);
-    }
-
-    private static void ThrowFailedToFormatException()
-    {
-        throw new global::System.Text.Json.JsonException(
-            "Failed to format value as global::Humanidy.Generators.Sample.SampleEntity.");
-    }
-
-}
-
+}                   

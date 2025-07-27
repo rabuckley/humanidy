@@ -12,7 +12,7 @@ public static class CompilationHelper
 
     private static readonly Assembly s_systemRuntimeAssembly = Assembly.Load("System.Runtime");
 
-    public static Compilation CreateCompilation(string source)
+    public static Compilation CreateCompilation(string source, CSharpCompilationOptions? options = null)
     {
         List<MetadataReference>? references =
         [
@@ -27,7 +27,8 @@ public static class CompilationHelper
             "TestAssembly",
             [CSharpSyntaxTree.ParseText(source)],
             references,
-            options: new CSharpCompilationOptions(
+            options: options
+            ?? new CSharpCompilationOptions(
                 outputKind: OutputKind.DynamicallyLinkedLibrary,
                 allowUnsafe: true));
     }

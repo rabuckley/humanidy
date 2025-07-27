@@ -1,6 +1,10 @@
+using System.Text.Json.Serialization;
+using Humanidy.Text.Json;
+
 namespace Humanidy;
 
 [Humanidy("test", RandomLength = 24)]
+[JsonConverter(typeof(TestIdJsonConverter))]
 public partial struct TestId;
 
 public sealed class HumanidyTests
@@ -175,5 +179,19 @@ public sealed class HumanidyTests
         var right = TestId.NewId();
         Assert.False(left == right);
         Assert.True(left != right);
+    }
+
+    [Fact]
+    public void JsonRoundtrip()
+    {
+        var id = TestId.NewId();
+
+        // Serialize
+        var json = System.Text.Json.JsonSerializer.Serialize(id);
+        Assert.NotEmpty(json);
+
+        // Deserialize
+        var deserializedId = System.Text.Json.JsonSerializer.Deserialize<TestId>(json);
+        Assert.Equal(id, deserializedId);
     }
 }

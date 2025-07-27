@@ -16,4 +16,10 @@ internal sealed record IdentifierSpecification
     public int RandomLength { get; set; }
 
     public ValueList<Diagnostic> Diagnostics { get; } = [];
+
+    public int TotalLength => Prefix.Length + RandomLength + 1;
+
+    public string FullyQualifiedStructName => Namespace is null
+        ? $"global::{StructName}"
+        : $"global::{Namespace}.{StructName}";
 }
