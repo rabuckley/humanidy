@@ -92,6 +92,25 @@ public sealed class HumanidyGeneratorTests
     }
 
     [Fact]
+    public void PrefixWithDigits_ProducesDiagnostic()
+    {
+        var compilation = CompilationHelper.CreateCompilation(
+            """
+            using Humanidy;
+
+            namespace Test;
+
+            [Humanidy("org2")]
+            public partial struct BadId;
+            """);
+
+        var result = CompilationHelper.RunValuesSourceGenerator(compilation);
+
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal("HUMANIDY002", diagnostic.Id);
+    }
+
+    [Fact]
     public void PrefixTooShort_ProducesDiagnostic()
     {
         var compilation = CompilationHelper.CreateCompilation(

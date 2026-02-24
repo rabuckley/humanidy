@@ -64,9 +64,8 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
                 };
             }
 
-            // The prefix must contain only alphanumeric ASCII characters.
-            // Underscores are disallowed because they conflict with the prefix/random separator.
-            if (!prefix.All(c => c < 128 && char.IsLetterOrDigit(c)))
+            // The prefix must contain only ASCII letters.
+            if (!prefix.All(c => c is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z')))
             {
                 return new IdentifierSpecification
                 {
@@ -76,7 +75,7 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
                             new DiagnosticDescriptor(
                                 "HUMANIDY002",
                                 "Invalid Prefix",
-                                "The prefix must contain only alphanumeric ASCII characters.",
+                                "The prefix must contain only ASCII letters.",
                                 "Usage",
                                 DiagnosticSeverity.Error,
                                 isEnabledByDefault: true),
