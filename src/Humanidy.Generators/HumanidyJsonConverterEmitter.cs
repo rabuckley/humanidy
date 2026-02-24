@@ -14,11 +14,23 @@ internal static class HumanidyJsonConverterEmitter
 
         builder.WriteBlock("#nullable enable");
 
-        builder.WriteBlock("namespace Humanidy.Text.Json;");
+        if (spec.Namespace is not null)
+        {
+            builder.WriteBlock($"namespace {spec.Namespace};");
+        }
+
+        // The converter is nested inside the partial struct so that:
+        // 1. There are no namespace collisions between assemblies.
+        // 2. The [JsonConverter] attribute on the struct can reference it via typeof(JsonConverter).
+        // The converter is public so that the System.Text.Json source generator in consuming projects
+        // can see and use it. Being nested inside the struct prevents namespace pollution.
+        builder.WriteLine($"partial struct {spec.StructName}");
+        builder.WriteLine("{");
+        builder.Indentation++;
 
         builder.WriteLine(
             $$"""
-              public sealed class {{spec.StructName}}JsonConverter : global::System.Text.Json.Serialization.JsonConverter<{{spec.FullyQualifiedStructName}}>
+              public sealed class JsonConverter : global::System.Text.Json.Serialization.JsonConverter<{{spec.StructName}}>
               {
               """);
 
@@ -26,31 +38,31 @@ internal static class HumanidyJsonConverterEmitter
 
         builder.WriteBlock(
             $$"""
-              public override {{spec.FullyQualifiedStructName}} Read(
-                  ref global::System.Text.Json.Utf8JsonReader reader, 
-                  global::System.Type typeToConvert, 
+              public override {{spec.StructName}} Read(
+                  ref global::System.Text.Json.Utf8JsonReader reader,
+                  global::System.Type typeToConvert,
                   global::System.Text.Json.JsonSerializerOptions options)
               {
                   if (reader.TokenType is not global::System.Text.Json.JsonTokenType.String)
                   {
                       throw new global::System.Text.Json.JsonException("Expected a string token.");
                   }
-                  
+
                   var valueLength = reader.HasValueSequence
                       ? checked((int)reader.ValueSequence.Length)
                       : reader.ValueSpan.Length;
-                  
-                  if (valueLength is not {{spec.FullyQualifiedStructName}}.Length)
+
+                  if (valueLength is not Length)
                   {
-                        throw new global::System.Text.Json.JsonException(
-                            $"Expected a {{spec.StructName}} value of length {{spec.TotalLength}}, but got '{valueLength}'.");
+                      throw new global::System.Text.Json.JsonException(
+                          $"Expected a {{spec.StructName}} value of length {Length}, but got '{valueLength}'.");
                   }
-                  
-                  global::System.Span<byte> buffer = stackalloc byte[{{spec.FullyQualifiedStructName}}.Length];
+
+                  global::System.Span<byte> buffer = stackalloc byte[Length];
                   var bytesWritten = reader.CopyString(buffer);
-                  global::System.Diagnostics.Debug.Assert(bytesWritten is {{spec.FullyQualifiedStructName}}.Length);
-                 
-                  if (!{{spec.FullyQualifiedStructName}}.TryParse(buffer, out var result))
+                  global::System.Diagnostics.Debug.Assert(bytesWritten is Length);
+
+                  if (!TryParse(buffer, out var result))
                   {
                       throw new global::System.Text.Json.JsonException($"Invalid {{spec.StructName}}.");
                   }
@@ -64,18 +76,18 @@ internal static class HumanidyJsonConverterEmitter
         builder.WriteBlock(
             $$"""
               public override void Write(
-                  global::System.Text.Json.Utf8JsonWriter writer, 
-                  {{spec.FullyQualifiedStructName}} value, 
+                  global::System.Text.Json.Utf8JsonWriter writer,
+                  {{spec.StructName}} value,
                   global::System.Text.Json.JsonSerializerOptions options)
               {
-                  global::System.Span<byte> buffer = stackalloc byte[{{spec.FullyQualifiedStructName}}.Length];
-                  
+                  global::System.Span<byte> buffer = stackalloc byte[Length];
+
                   if (!value.TryFormat(buffer, out var bytesWritten))
                   {
                       ThrowFailedToFormatException();
                       return;
                   }
-                
+
                   writer.WriteStringValue(buffer[..bytesWritten]);
               }
               """);
@@ -85,34 +97,58 @@ internal static class HumanidyJsonConverterEmitter
         builder.WriteBlock(
             $$"""
               public override void WriteAsPropertyName(
-                  global::System.Text.Json.Utf8JsonWriter writer, 
-                  {{spec.FullyQualifiedStructName}} value, 
+                  global::System.Text.Json.Utf8JsonWriter writer,
+                  {{spec.StructName}} value,
                   global::System.Text.Json.JsonSerializerOptions options)
               {
-                  global::System.Span<byte> buffer = stackalloc byte[{{spec.FullyQualifiedStructName}}.Length];
-                  
+                  global::System.Span<byte> buffer = stackalloc byte[Length];
+
                   if (!value.TryFormat(buffer, out var bytesWritten))
                   {
                       ThrowFailedToFormatException();
                       return;
                   }
-                
+
                   writer.WritePropertyName(buffer[..bytesWritten]);
               }
               """);
 
+        builder.WriteSkipLocalsInitAttr(options);
+
+        builder.WriteBlock(
+            $$"""
+              public override {{spec.StructName}} ReadAsPropertyName(
+                  ref global::System.Text.Json.Utf8JsonReader reader,
+                  global::System.Type typeToConvert,
+                  global::System.Text.Json.JsonSerializerOptions options)
+              {
+                  global::System.Span<byte> buffer = stackalloc byte[Length];
+                  var bytesWritten = reader.CopyString(buffer);
+                  global::System.Diagnostics.Debug.Assert(bytesWritten is Length);
+
+                  if (!TryParse(buffer, out var result))
+                  {
+                      throw new global::System.Text.Json.JsonException($"Invalid {{spec.StructName}} property key.");
+                  }
+
+                  return result;
+              }
+              """);
 
         builder.WriteBlock(
             $$"""
               private static void ThrowFailedToFormatException()
               {
                   throw new global::System.Text.Json.JsonException(
-                      "Failed to format value as {{spec.FullyQualifiedStructName}}.");
+                      "Failed to format {{spec.StructName}} value.");
               }
               """);
 
         builder.Indentation--;
-        builder.WriteBlock("}");
+        builder.WriteBlock("}"); // close JsonConverter class
+
+        builder.Indentation--;
+        builder.WriteBlock("}"); // close partial struct
 
         return builder.ToSourceText();
     }

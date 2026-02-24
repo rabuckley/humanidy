@@ -72,6 +72,63 @@ public sealed class HumanidyGeneratorTests
         return Verify(expected);
     }
 
+    [Fact]
+    public void PrefixWithUnderscore_ProducesDiagnostic()
+    {
+        var compilation = CompilationHelper.CreateCompilation(
+            """
+            using Humanidy;
+
+            namespace Test;
+
+            [Humanidy("my_app")]
+            public partial struct BadId;
+            """);
+
+        var result = CompilationHelper.RunValuesSourceGenerator(compilation);
+
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal("HUMANIDY002", diagnostic.Id);
+    }
+
+    [Fact]
+    public void PrefixTooShort_ProducesDiagnostic()
+    {
+        var compilation = CompilationHelper.CreateCompilation(
+            """
+            using Humanidy;
+
+            namespace Test;
+
+            [Humanidy("x")]
+            public partial struct BadId;
+            """);
+
+        var result = CompilationHelper.RunValuesSourceGenerator(compilation);
+
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal("HUMANIDY003", diagnostic.Id);
+    }
+
+    [Fact]
+    public void RandomLengthTooSmall_ProducesDiagnostic()
+    {
+        var compilation = CompilationHelper.CreateCompilation(
+            """
+            using Humanidy;
+
+            namespace Test;
+
+            [Humanidy("test", RandomLength = 2)]
+            public partial struct BadId;
+            """);
+
+        var result = CompilationHelper.RunValuesSourceGenerator(compilation);
+
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal("HUMANIDY004", diagnostic.Id);
+    }
+
     private static Task Verify(string source)
     {
         return Verifier.Verify(source).UseDirectory("Snapshots");

@@ -27,6 +27,7 @@ internal static class HumanidyIdentifierEmitter
               /// {{spec.StructName}} has an entropy of ~{{entropy:F2}} bits.
               /// </remarks>
               /// </summary>
+              [global::System.Text.Json.Serialization.JsonConverter(typeof(JsonConverter))]
               readonly partial struct {{spec.StructName}} :
                  global::System.IEquatable<{{spec.StructName}}>,
                  global::System.IComparable<{{spec.StructName}}>,
@@ -42,7 +43,9 @@ internal static class HumanidyIdentifierEmitter
         _ = builder
             .WriteConstants(spec, alphabet)
             .WriteConstructor(spec)
+            .WriteEmptyField(spec)
             .WriteNewIdMethod(spec)
+            .WriteAsBytesMethod()
             .WriteComparisonMethods(spec)
             .WriteIParsableImpl(spec)
             .WriteIFormattableImpl()
@@ -71,6 +74,35 @@ internal static class HumanidyIdentifierEmitter
                   _value = value;
               }
               """);
+
+        return builder;
+    }
+
+    private static SourceWriter WriteEmptyField(this SourceWriter builder, IdentifierSpecification spec)
+    {
+        builder.WriteBlock(
+            $$"""
+              /// <summary>
+              /// The empty <see cref="{{spec.StructName}}"/> value, equivalent to <c>default</c>.
+              /// </summary>
+              public static readonly {{spec.StructName}} Empty = default;
+              """);
+
+        return builder;
+    }
+
+    private static SourceWriter WriteAsBytesMethod(this SourceWriter builder)
+    {
+        builder.WriteBlock(
+            """
+            /// <summary>
+            /// Returns the underlying UTF-8 bytes of this identifier without copying.
+            /// </summary>
+            public global::System.ReadOnlySpan<byte> AsBytes()
+            {
+                return _value.Span;
+            }
+            """);
 
         return builder;
     }
@@ -189,7 +221,7 @@ internal static class HumanidyIdentifierEmitter
                   {
                       return result;
                   }
-                 
+
                   throw new global::System.FormatException(
                       $"The provided UTF-8 byte span is not a valid {{spec.StructName}}.");
               }
@@ -212,6 +244,16 @@ internal static class HumanidyIdentifierEmitter
                   for (var i = 0; i < PrefixLength; i++)
                   {
                       if (utf8Text[i] != Prefix[i])
+                      {
+                          result = default;
+                          return false;
+                      }
+                  }
+
+                  // Validate that every byte in the random portion is a valid identifier character.
+                  for (var i = PrefixLength + 1; i < Length; i++)
+                  {
+                      if (!ValidIdBytes.Contains(utf8Text[i]))
                       {
                           result = default;
                           return false;

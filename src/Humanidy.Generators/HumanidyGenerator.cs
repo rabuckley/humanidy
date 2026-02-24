@@ -64,9 +64,9 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
                 };
             }
 
-            // The prefix must contain only alphanumeric ASCII characters or underscores.
-            // If it contains any other characters, we return an error diagnostic.
-            if (!prefix.All(c => c < 128 && (char.IsLetterOrDigit(c) || c == '_')))
+            // The prefix must contain only alphanumeric ASCII characters.
+            // Underscores are disallowed because they conflict with the prefix/random separator.
+            if (!prefix.All(c => c < 128 && char.IsLetterOrDigit(c)))
             {
                 return new IdentifierSpecification
                 {
@@ -85,6 +85,25 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
                 };
             }
 
+            if (prefix.Length is < 2 or > 8)
+            {
+                return new IdentifierSpecification
+                {
+                    Diagnostics =
+                    {
+                        Diagnostic.Create(
+                            new DiagnosticDescriptor(
+                                "HUMANIDY003",
+                                "Invalid Prefix Length",
+                                "The prefix length must be between 2 and 8 characters.",
+                                "Usage",
+                                DiagnosticSeverity.Error,
+                                isEnabledByDefault: true),
+                            attr.ApplicationSyntaxReference?.GetSyntax(cancellationToken).GetLocation())
+                    }
+                };
+            }
+
             var randomLengthArg = attr.NamedArguments
                 .FirstOrDefault(arg => arg.Key == "RandomLength")
                 .Value;
@@ -93,6 +112,25 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
             {
                 // If RandomLength is not provided, use the default value of 14.
                 randomLength = 14;
+            }
+
+            if (randomLength is < 8 or > 128)
+            {
+                return new IdentifierSpecification
+                {
+                    Diagnostics =
+                    {
+                        Diagnostic.Create(
+                            new DiagnosticDescriptor(
+                                "HUMANIDY004",
+                                "Invalid Random Length",
+                                "RandomLength must be between 8 and 128.",
+                                "Usage",
+                                DiagnosticSeverity.Error,
+                                isEnabledByDefault: true),
+                            attr.ApplicationSyntaxReference?.GetSyntax(cancellationToken).GetLocation())
+                    }
+                };
             }
 
             return new IdentifierSpecification

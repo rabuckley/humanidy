@@ -1,10 +1,6 @@
-using System.Text.Json.Serialization;
-using Humanidy.Text.Json;
-
 namespace Humanidy;
 
 [Humanidy("test", RandomLength = 24)]
-[JsonConverter(typeof(TestIdJsonConverter))]
 public partial struct TestId;
 
 public sealed class HumanidyTests
@@ -193,5 +189,53 @@ public sealed class HumanidyTests
         // Deserialize
         var deserializedId = System.Text.Json.JsonSerializer.Deserialize<TestId>(json);
         Assert.Equal(id, deserializedId);
+    }
+
+    [Fact]
+    public void JsonDictionaryKey_Roundtrip()
+    {
+        var id = TestId.NewId();
+        var dict = new Dictionary<TestId, string> { [id] = "hello" };
+
+        var json = System.Text.Json.JsonSerializer.Serialize(dict);
+        var deserialized = System.Text.Json.JsonSerializer.Deserialize<Dictionary<TestId, string>>(json);
+
+        Assert.NotNull(deserialized);
+        Assert.True(deserialized.ContainsKey(id));
+        Assert.Equal("hello", deserialized[id]);
+    }
+
+    [Fact]
+    public void TryParse_InvalidRandomCharacters_ReturnsFalse()
+    {
+        var invalid = "test_" + new string('!', 24);
+
+        var result = TestId.TryParse(invalid, out _);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void Empty_IsDefault()
+    {
+        Assert.Equal(default(TestId), TestId.Empty);
+    }
+
+    [Fact]
+    public void Empty_ToStringReturnsEmptyString()
+    {
+        Assert.Equal(string.Empty, TestId.Empty.ToString());
+    }
+
+    [Fact]
+    public void AsBytes_ReturnsUtf8Representation()
+    {
+        var id = TestId.NewId();
+
+        var bytes = id.AsBytes();
+
+        Assert.Equal(TestId.Length, bytes.Length);
+        Assert.True(TestId.TryParse(bytes, out var parsed));
+        Assert.Equal(id, parsed);
     }
 }

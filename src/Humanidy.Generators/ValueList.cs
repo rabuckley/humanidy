@@ -5,7 +5,7 @@ namespace Humanidy.Generators;
 /// <summary>
 /// A list with sequence equality.
 /// </summary>
-public sealed class ValueList<T> : IList<T>, IEquatable<ValueList<T>>
+internal sealed class ValueList<T> : IList<T>, IEquatable<ValueList<T>>
     where T : IEquatable<T>
 {
     private readonly IList<T> _inner;
@@ -92,6 +92,16 @@ public sealed class ValueList<T> : IList<T>, IEquatable<ValueList<T>>
 
     public override int GetHashCode()
     {
-        return _inner.Aggregate(0, (current, item) => current ^ item.GetHashCode());
+        unchecked
+        {
+            var hash = 17;
+
+            foreach (var item in _inner)
+            {
+                hash = hash * 31 + item.GetHashCode();
+            }
+
+            return hash;
+        }
     }
 }
