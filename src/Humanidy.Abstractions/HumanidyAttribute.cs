@@ -22,6 +22,8 @@ public sealed class HumanidyAttribute : Attribute
 
     /// <summary>
     /// The length of the randomly generated part of the identifier.
+    /// Must be at least 8. The total identifier length (prefix + underscore + random)
+    /// cannot exceed 128 bytes.
     /// </summary>
     public int RandomLength { get; set; } = 24;
 }

@@ -33,7 +33,7 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
     private static readonly DiagnosticDescriptor s_invalidRandomLength = new(
         "HUMANIDY004",
         "Invalid Random Length",
-        "RandomLength must be between 8 and 128",
+        "RandomLength must be between 8 and {0} (total identifier length cannot exceed 128 bytes)",
         "Usage",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -128,7 +128,11 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
                 randomLength = 24;
             }
 
-            if (randomLength is < 8 or > 128)
+            // Total identifier length = prefix + underscore + random part.
+            // Cap total at 128 bytes to keep the struct within two cache lines.
+            var maxRandomLength = 128 - prefix.Length - 1;
+
+            if (randomLength < 8 || randomLength > maxRandomLength)
             {
                 return new IdentifierSpecification
                 {
@@ -136,7 +140,8 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
                     {
                         Diagnostic.Create(
                             s_invalidRandomLength,
-                            attr.ApplicationSyntaxReference?.GetSyntax(cancellationToken).GetLocation())
+                            attr.ApplicationSyntaxReference?.GetSyntax(cancellationToken).GetLocation(),
+                            maxRandomLength)
                     }
                 };
             }
