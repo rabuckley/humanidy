@@ -123,8 +123,9 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
 
             if (randomLengthArg.Value is not int randomLength)
             {
-                // If RandomLength is not provided, use the default value of 14.
-                randomLength = 14;
+                // If RandomLength is not provided, use the default value of 24
+                // (~143 bits of entropy with a 62-character alphabet).
+                randomLength = 24;
             }
 
             if (randomLength is < 8 or > 128)

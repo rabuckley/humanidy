@@ -24,7 +24,7 @@ public class SpanParsableBenchmarks
 [MemoryDiagnoser]
 public class Utf8SpanParsableBenchmarks
 {
-    private static ReadOnlySpan<byte> Bytes => "bench_ilR6rtfrSOuZo"u8;
+    private static ReadOnlySpan<byte> Bytes => "bench_ilR6rtfrSOuZoABCDEFGHIJK"u8;
 
     [Benchmark]
     public BenchmarkId Parse()

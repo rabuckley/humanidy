@@ -5,9 +5,9 @@
 namespace Humanidy.Generators.Sample;
 
 /// <summary>
-/// An identifier of the form <c>pref_</c> followed by 14 random alphanumeric ASCII characters.
+/// An identifier of the form <c>pref_</c> followed by 24 random alphanumeric ASCII characters.
 /// <remarks>
-/// SampleEntity has an entropy of ~83.36 bits.
+/// SampleEntity has an entropy of ~142.90 bits.
 /// </remarks>
 /// </summary>
 [global::System.Diagnostics.DebuggerDisplay("{ToString(),nq}")]
@@ -23,7 +23,7 @@ readonly partial struct SampleEntity :
     /// <summary>
     /// The length of the randomly generated part of the identifier.
     /// </summary>
-    private const int RandomLength = 14;
+    private const int RandomLength = 24;
     
     /// <summary>
     /// The length of the prefix, excluding the trailing underscore.
@@ -72,7 +72,7 @@ readonly partial struct SampleEntity :
 
     /// <summary>
     /// Creates a new, randomly generated, SampleEntity with the prefix <c>pref</c> and
-    /// 14 random alphanumeric ASCII characters.
+    /// 24 random alphanumeric ASCII characters.
     /// </summary>
     public static SampleEntity NewId()
     {

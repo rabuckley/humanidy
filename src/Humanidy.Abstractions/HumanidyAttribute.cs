@@ -23,5 +23,5 @@ public sealed class HumanidyAttribute : Attribute
     /// <summary>
     /// The length of the randomly generated part of the identifier.
     /// </summary>
-    public int RandomLength { get; set; } = 14;
+    public int RandomLength { get; set; } = 24;
 }
