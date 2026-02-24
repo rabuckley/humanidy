@@ -17,7 +17,7 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
     private static readonly DiagnosticDescriptor s_invalidPrefixCharacters = new(
         "HUMANIDY002",
         "Invalid Prefix",
-        "The prefix must contain only ASCII letters",
+        "The prefix must contain only lowercase ASCII letters",
         "Usage",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -90,8 +90,8 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
                 };
             }
 
-            // The prefix must contain only ASCII letters.
-            if (!prefix.All(c => c is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z')))
+            // The prefix must contain only lowercase ASCII letters.
+            if (!prefix.All(c => c is >= 'a' and <= 'z'))
             {
                 return new IdentifierSpecification
                 {

@@ -10,7 +10,7 @@ public sealed class HumanidyAttribute : Attribute
             string when string.IsNullOrWhiteSpace(prefix) => throw new ArgumentException("Prefix cannot be null or whitespace.", nameof(prefix)),
             { Length: < 2 } => throw new ArgumentException("Prefix length must be at least 2 characters.", nameof(prefix)),
             { Length: > 8 } => throw new ArgumentException("Prefix length must be less than or equal to 8 characters.", nameof(prefix)),
-            _ when !prefix.All(c => c is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z')) => throw new ArgumentException("Prefix must contain only ASCII letters.", nameof(prefix)),
+            _ when !prefix.All(c => c is >= 'a' and <= 'z') => throw new ArgumentException("Prefix must contain only lowercase ASCII letters.", nameof(prefix)),
             _ => prefix
         };
     }
