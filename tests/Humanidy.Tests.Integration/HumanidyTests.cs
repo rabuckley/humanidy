@@ -238,4 +238,64 @@ public sealed class HumanidyTests
         Assert.True(TestId.TryParse(bytes, out var parsed));
         Assert.Equal(id, parsed);
     }
+
+    [Fact]
+    public void Default_JsonSerialize_Throws()
+    {
+        var act = () => System.Text.Json.JsonSerializer.Serialize(default(TestId));
+
+        Assert.Throws<System.Text.Json.JsonException>(act);
+    }
+
+    [Fact]
+    public void Default_AsBytes_ReturnsEmptySpan()
+    {
+        Assert.Equal(0, default(TestId).AsBytes().Length);
+    }
+
+    [Fact]
+    public void Default_TryFormat_Char_ReturnsFalse()
+    {
+        Span<char> span = stackalloc char[TestId.Length];
+
+        var result = default(TestId).TryFormat(span, out var charsWritten);
+
+        Assert.False(result);
+        Assert.Equal(0, charsWritten);
+    }
+
+    [Fact]
+    public void Default_TryFormat_Byte_ReturnsFalse()
+    {
+        Span<byte> span = stackalloc byte[TestId.Length];
+
+        var result = default(TestId).TryFormat(span, out var bytesWritten);
+
+        Assert.False(result);
+        Assert.Equal(0, bytesWritten);
+    }
+
+    [Fact]
+    public void Default_Equals_Default()
+    {
+        Assert.Equal(default(TestId), default(TestId));
+    }
+
+    [Fact]
+    public void Default_NotEquals_NewId()
+    {
+        Assert.NotEqual(default(TestId), TestId.NewId());
+    }
+
+    [Fact]
+    public void Default_GetHashCode_IsConsistent()
+    {
+        Assert.Equal(default(TestId).GetHashCode(), default(TestId).GetHashCode());
+    }
+
+    [Fact]
+    public void Default_CompareTo_NewId_IsNegative()
+    {
+        Assert.True(default(TestId).CompareTo(TestId.NewId()) < 0);
+    }
 }

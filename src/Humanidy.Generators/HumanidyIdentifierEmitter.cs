@@ -27,6 +27,7 @@ internal static class HumanidyIdentifierEmitter
               /// {{spec.StructName}} has an entropy of ~{{entropy:F2}} bits.
               /// </remarks>
               /// </summary>
+              [global::System.Diagnostics.DebuggerDisplay("{ToString(),nq}")]
               [global::System.Text.Json.Serialization.JsonConverter(typeof(JsonConverter))]
               readonly partial struct {{spec.StructName}} :
                  global::System.IEquatable<{{spec.StructName}}>,
@@ -64,12 +65,22 @@ internal static class HumanidyIdentifierEmitter
     {
         builder.WriteBlock(
             $$"""
+              [global::System.Runtime.CompilerServices.InlineArray(Length)]
+              private struct IdBuffer
+              {
+                  private byte _element0;
+              }
+
               /// <summary>
               /// The underlying value of the identifier.
               /// </summary>
-              private readonly global::System.ReadOnlyMemory<byte> _value;
+              private readonly IdBuffer _value;
 
-              private {{spec.StructName}}(global::System.ReadOnlyMemory<byte> value)
+              // Valid identifiers always start with an ASCII letter or digit (the prefix),
+              // so a NUL first byte reliably indicates a default/empty value.
+              private bool IsEmpty => _value[0] is 0;
+
+              private {{spec.StructName}}(IdBuffer value)
               {
                   _value = value;
               }
@@ -93,14 +104,27 @@ internal static class HumanidyIdentifierEmitter
 
     private static SourceWriter WriteAsBytesMethod(this SourceWriter builder)
     {
+        // [UnscopedRef] is required because returning a ReadOnlySpan<byte> that refers to
+        // a field of a readonly struct would otherwise violate the default ref safety
+        // scoping rules. The span's lifetime is bounded by the caller's ref to the struct.
         builder.WriteBlock(
             """
             /// <summary>
-            /// Returns the underlying UTF-8 bytes of this identifier without copying.
+            /// Returns a read-only span over the underlying UTF-8 bytes of this identifier.
             /// </summary>
+            /// <remarks>
+            /// The returned span references inline storage within this struct instance.
+            /// Callers must ensure the struct outlives any use of the returned span.
+            /// </remarks>
+            [global::System.Diagnostics.CodeAnalysis.UnscopedRef]
             public global::System.ReadOnlySpan<byte> AsBytes()
             {
-                return _value.Span;
+                if (IsEmpty)
+                {
+                    return default;
+                }
+
+                return _value;
             }
             """);
 
@@ -148,21 +172,27 @@ internal static class HumanidyIdentifierEmitter
 
             public bool TryFormat(global::System.Span<byte> utf8Destination, out int bytesWritten)
             {
+                if (IsEmpty)
+                {
+                    bytesWritten = 0;
+                    return false;
+                }
+
                 if (utf8Destination.Length < Length)
                 {
                     bytesWritten = 0;
                     return false;
                 }
 
-                _value.Span.CopyTo(utf8Destination);
-                bytesWritten = _value.Length;
+                ((global::System.ReadOnlySpan<byte>)_value).CopyTo(utf8Destination);
+                bytesWritten = Length;
                 return true;
             }
 
             bool global::System.IUtf8SpanFormattable.TryFormat(
-                global::System.Span<byte> utf8Destination, 
-                out int bytesWritten, 
-                global::System.ReadOnlySpan<char> format, 
+                global::System.Span<byte> utf8Destination,
+                out int bytesWritten,
+                global::System.ReadOnlySpan<char> format,
                 global::System.IFormatProvider? provider)
             {
                 return TryFormat(utf8Destination, out bytesWritten);
@@ -181,23 +211,30 @@ internal static class HumanidyIdentifierEmitter
             # region ISpanFormattable
 
             public bool TryFormat(
-                global::System.Span<char> destination, 
+                global::System.Span<char> destination,
                 out int charsWritten)
             {
+                if (IsEmpty)
+                {
+                    charsWritten = 0;
+                    return false;
+                }
+
                 if (destination.Length < Length)
                 {
                     charsWritten = 0;
                     return false;
                 }
 
-                return global::System.Text.Ascii.ToUtf16(_value.Span, destination, out charsWritten) 
+                return global::System.Text.Ascii.ToUtf16(
+                    (global::System.ReadOnlySpan<byte>)_value, destination, out charsWritten)
                     is global::System.Buffers.OperationStatus.Done;
             }
 
             bool global::System.ISpanFormattable.TryFormat(
-                global::System.Span<char> destination, 
-                out int charsWritten, 
-                global::System.ReadOnlySpan<char> format, 
+                global::System.Span<char> destination,
+                out int charsWritten,
+                global::System.ReadOnlySpan<char> format,
                 global::System.IFormatProvider? provider)
             {
                 return TryFormat(destination, out charsWritten);
@@ -260,7 +297,9 @@ internal static class HumanidyIdentifierEmitter
                       }
                   }
 
-                  result = new(utf8Text.ToArray());
+                  IdBuffer buffer = default;
+                  utf8Text.CopyTo(buffer);
+                  result = new(buffer);
                   return true;
               }
                  
@@ -343,11 +382,11 @@ internal static class HumanidyIdentifierEmitter
             """
             public override string ToString()
             {
-                if (_value.IsEmpty)
+                if (IsEmpty)
                 {
                     return string.Empty;
                 }
-                
+
                 return string.Create(Length, this, static (span, @self) =>
                 {
                     var result = @self.TryFormat(span, out var charsWritten);
@@ -357,7 +396,7 @@ internal static class HumanidyIdentifierEmitter
             }
 
             string global::System.IFormattable.ToString(
-                string? format, 
+                string? format,
                 global::System.IFormatProvider? formatProvider)
             {
                 return ToString();
@@ -417,7 +456,9 @@ internal static class HumanidyIdentifierEmitter
             $$"""
               public bool Equals({{spec.StructName}} other)
               {
-                  return global::System.MemoryExtensions.SequenceEqual(_value.Span, other._value.Span);
+                  return global::System.MemoryExtensions.SequenceEqual(
+                      (global::System.ReadOnlySpan<byte>)_value,
+                      (global::System.ReadOnlySpan<byte>)other._value);
               }
 
               public override bool Equals(object? obj)
@@ -428,7 +469,7 @@ internal static class HumanidyIdentifierEmitter
               public override int GetHashCode()
               {
                   var hashCode = new global::System.HashCode();
-                  hashCode.AddBytes(_value.Span);
+                  hashCode.AddBytes(((global::System.ReadOnlySpan<byte>)_value).Slice(PrefixLength + 1));
                   return hashCode.ToHashCode();
               }
 
@@ -444,7 +485,9 @@ internal static class HumanidyIdentifierEmitter
 
               public int CompareTo({{spec.StructName}} other)
               {
-                  return global::System.MemoryExtensions.SequenceCompareTo(_value.Span, other._value.Span);
+                  return global::System.MemoryExtensions.SequenceCompareTo(
+                      (global::System.ReadOnlySpan<byte>)_value,
+                      (global::System.ReadOnlySpan<byte>)other._value);
               }
 
               public static bool operator <({{spec.StructName}} left, {{spec.StructName}} right)
@@ -476,21 +519,22 @@ internal static class HumanidyIdentifierEmitter
         builder.WriteBlock(
             $$"""
               /// <summary>
-              /// Creates a new, randomly generated, {{spec.StructName}} with the prefix <c>{{spec.Prefix}}</c> and 
+              /// Creates a new, randomly generated, {{spec.StructName}} with the prefix <c>{{spec.Prefix}}</c> and
               /// {{spec.RandomLength}} random alphanumeric ASCII characters.
               /// </summary>
               public static {{spec.StructName}} NewId()
               {
-                  byte[] identifier = new byte[Length];
-                  
-                  Prefix.CopyTo(identifier);
-                  identifier[PrefixLength] = (byte)'_';
+                  IdBuffer buffer = default;
+                  global::System.Span<byte> span = buffer;
+
+                  Prefix.CopyTo(span);
+                  span[PrefixLength] = (byte)'_';
 
                   global::System.Security.Cryptography.RandomNumberGenerator.GetItems(
                       ValidIdBytes,
-                      identifier.AsSpan(PrefixLength + 1));
+                      span.Slice(PrefixLength + 1));
 
-                  return new {{spec.StructName}}(new global::System.ReadOnlyMemory<byte>(identifier));
+                  return new {{spec.StructName}}(buffer);
               }
               """);
 
