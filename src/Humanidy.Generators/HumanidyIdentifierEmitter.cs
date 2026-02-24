@@ -468,6 +468,11 @@ internal static class HumanidyIdentifierEmitter
 
               public override int GetHashCode()
               {
+                  if (IsEmpty)
+                  {
+                      return 0;
+                  }
+
                   var hashCode = new global::System.HashCode();
                   hashCode.AddBytes(((global::System.ReadOnlySpan<byte>)_value).Slice(PrefixLength + 1));
                   return hashCode.ToHashCode();

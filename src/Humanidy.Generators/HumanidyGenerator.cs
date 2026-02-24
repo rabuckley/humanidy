@@ -6,6 +6,38 @@ namespace Humanidy.Generators;
 [Generator]
 public sealed class HumanidyGenerator : IIncrementalGenerator
 {
+    private static readonly DiagnosticDescriptor s_invalidPrefix = new(
+        "HUMANIDY001",
+        "Invalid Prefix",
+        "The prefix must be a non-empty string",
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor s_invalidPrefixCharacters = new(
+        "HUMANIDY002",
+        "Invalid Prefix",
+        "The prefix must contain only ASCII letters",
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor s_invalidPrefixLength = new(
+        "HUMANIDY003",
+        "Invalid Prefix Length",
+        "The prefix length must be between 2 and 8 characters",
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor s_invalidRandomLength = new(
+        "HUMANIDY004",
+        "Invalid Random Length",
+        "RandomLength must be between 8 and 128",
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -52,13 +84,7 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
                     Diagnostics =
                     {
                         Diagnostic.Create(
-                            new DiagnosticDescriptor(
-                                "HUMANIDY001",
-                                "Invalid Prefix",
-                                "The prefix must be a non-empty string.",
-                                "Usage",
-                                DiagnosticSeverity.Error,
-                                isEnabledByDefault: true),
+                            s_invalidPrefix,
                             attr.ApplicationSyntaxReference?.GetSyntax(cancellationToken).GetLocation())
                     }
                 };
@@ -72,13 +98,7 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
                     Diagnostics =
                     {
                         Diagnostic.Create(
-                            new DiagnosticDescriptor(
-                                "HUMANIDY002",
-                                "Invalid Prefix",
-                                "The prefix must contain only ASCII letters.",
-                                "Usage",
-                                DiagnosticSeverity.Error,
-                                isEnabledByDefault: true),
+                            s_invalidPrefixCharacters,
                             attr.ApplicationSyntaxReference?.GetSyntax(cancellationToken).GetLocation())
                     }
                 };
@@ -91,13 +111,7 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
                     Diagnostics =
                     {
                         Diagnostic.Create(
-                            new DiagnosticDescriptor(
-                                "HUMANIDY003",
-                                "Invalid Prefix Length",
-                                "The prefix length must be between 2 and 8 characters.",
-                                "Usage",
-                                DiagnosticSeverity.Error,
-                                isEnabledByDefault: true),
+                            s_invalidPrefixLength,
                             attr.ApplicationSyntaxReference?.GetSyntax(cancellationToken).GetLocation())
                     }
                 };
@@ -120,13 +134,7 @@ public sealed class HumanidyGenerator : IIncrementalGenerator
                     Diagnostics =
                     {
                         Diagnostic.Create(
-                            new DiagnosticDescriptor(
-                                "HUMANIDY004",
-                                "Invalid Random Length",
-                                "RandomLength must be between 8 and 128.",
-                                "Usage",
-                                DiagnosticSeverity.Error,
-                                isEnabledByDefault: true),
+                            s_invalidRandomLength,
                             attr.ApplicationSyntaxReference?.GetSyntax(cancellationToken).GetLocation())
                     }
                 };

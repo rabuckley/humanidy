@@ -122,6 +122,16 @@ internal static class HumanidyJsonConverterEmitter
                   global::System.Type typeToConvert,
                   global::System.Text.Json.JsonSerializerOptions options)
               {
+                  var valueLength = reader.HasValueSequence
+                      ? checked((int)reader.ValueSequence.Length)
+                      : reader.ValueSpan.Length;
+
+                  if (valueLength is not Length)
+                  {
+                      throw new global::System.Text.Json.JsonException(
+                          $"Expected a {{spec.StructName}} property key of length {Length}, but got '{valueLength}'.");
+                  }
+
                   global::System.Span<byte> buffer = stackalloc byte[Length];
                   var bytesWritten = reader.CopyString(buffer);
                   global::System.Diagnostics.Debug.Assert(bytesWritten is Length);

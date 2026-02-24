@@ -33,6 +33,11 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <AdditionalFiles Include="AnalyzerReleases.Shipped.md"/>
+        <AdditionalFiles Include="AnalyzerReleases.Unshipped.md"/>
+    </ItemGroup>
+
     <!-- PrivateAssets so the NuGet doesn't have any dependencies -->
     <ItemGroup>
         <ProjectReference Include="..\Humanidy.Abstractions\Humanidy.Abstractions.csproj" PrivateAssets="All"/>
